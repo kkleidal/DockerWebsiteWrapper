@@ -6,7 +6,7 @@ build:
 	docker build -t $(DOCKER_IMG) . && touch build
 
 run: build
-	docker run -d -p '0.0.0.0:8080:80' --volume '$(pwd)/app:/app' "$(DOCKER_IMG)" > $@
+	docker run -d -p '0.0.0.0:8080:80' --volume '$(shell pwd)/app:/app' "$(DOCKER_IMG)" > $@
 
 stop: run
 	docker stop $(CID)
