@@ -1,4 +1,5 @@
 DOCKER_IMG="kkleidal/lamp"
+CONTAINER_NAME="dww_example"
 
 CID := $(shell cat run 2>/dev/null)
 
@@ -10,20 +11,24 @@ ifndef $(PORT)
 	PORT := 80
 endif
 
+EXISTING := $(shell docker ps -aq -f "name=$(CONTAINER_NAME)")
+
 build:
-	docker build -t $(DOCKER_IMG) . && touch build
+	docker build -t $(DOCKER_IMG) .
 
-run: build
-	docker run -d -p '$(HOST):$(PORT):80' --volume '$(shell pwd)/app:/app' "$(DOCKER_IMG)" > $@
+run: build stop rm
+	docker run -d -p '$(HOST):$(PORT):80' --volume '$(shell pwd)/app:/app' --name $(CONTAINER_NAME) "$(DOCKER_IMG)"
 
-stop: run
-	docker stop $(CID)
+stop:
+	@if [ -n "$(EXISTING)" ]; then\
+		docker stop $(EXISTING);\
+	fi
 
-rm: run
-	$(RM) $<
-	docker rm $(CID)
+rm:
+	@if [ -n "$(EXISTING)" ]; then\
+		docker rm $(EXISTING);\
+	fi
 
-forceclean:
-	$(RM) run build
+clean: stop rm
 
 all: build
